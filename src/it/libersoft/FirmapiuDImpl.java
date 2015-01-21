@@ -48,7 +48,7 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 	 * @see it.libersoft.FirmapiuDInterface#sign(java.lang.String[], java.util.Map)
 	 */
 	@Override
-	public Map<String, Variant<?>> sign(String[] args,
+	public Map<String, Variant<?>> sign(Variant<?>[] args,
 			Map<String, Variant<?>> options) {
 		// TODO Auto-generated method stub
 		//FIXME da cambiare nel momento in cui si riscrive libreria
@@ -57,8 +57,8 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 		if (args==null || args.length==0)
 			throw new DBusExecutionException(localrb.getString("error0"));
 		Set<String> commandargs=new TreeSet<String>();
-		for(String arg : args)
-			commandargs.add(arg);
+		for(Variant<?> arg : args)
+			commandargs.add((String)arg.getValue());
 		
 		Map<String,Object> commandoptions=null;
 		if(options!=null){
@@ -79,7 +79,7 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block: da sistemare i log
 			e.printStackTrace();
-			throw new DBusExecutionException(localrb.getString("error3")+" : "+e.getLocalizedMessage());
+			throw new DBusExecutionException(localrb.getString("error3f")+" : "+e.getLocalizedMessage());
 		}
 		
 		//effettua il marshalling dei risultati da inviare a dbus

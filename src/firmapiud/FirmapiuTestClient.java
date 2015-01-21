@@ -44,8 +44,10 @@ class FirmapiuTestClient {
 			System.out.println(ver);*/
 		
 		//CODICE DI FIRMA---------------------------->
-		/*
-		String[] paths={"/prova1","/home/andy/firmapiu/README.txt"};
+		
+		//String[] paths={"/prova1","/home/andy/firmapiu/README.txt"};
+		Variant<String> str = new Variant<String>("Prova","s");
+		Variant<?>[] paths={str};
 		Map<String,Variant<?>> options = new TreeMap<String,Variant<?>>();
 		options.put(CommandProxyInterface.PIN, new Variant<Object>("12345678"));
 		options.put(CommandProxyInterface.OUTDIR, new Variant<Object>("/home/andy/Scrivania"));
@@ -58,18 +60,18 @@ class FirmapiuTestClient {
 			System.out.println("Key: "+key);
 			System.out.println("\t"+(String)(result.get(key).getValue()));
 		}
-		*/
+		
 		
 		//CODICE DI VERIFICA---------------------------->
 		//String[] paths={"/home/andy/Scrivania/README.txt.p7m","/home/andy/Scrivania/Cose da Fare.txt.p7m","/pippulus"};
-		String[] paths={"/home/andy/Scrivania/t.txt.p7m"};
+		/*String[] paths={"/home/andy/Scrivania/t.txt.p7m"};
 		Map<String,String> result=remote.verify(paths);
 		Iterator<String> itr=result.keySet().iterator();
 		while(itr.hasNext()){
 			String key=itr.next();
 			System.out.println("Key: "+key);
 			System.out.println("\t"+result.get(key));
-		}
+		}*/
 		
 		
 		/*String str=echo.echo("prova prova prova");

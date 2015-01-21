@@ -20,7 +20,7 @@ import org.freedesktop.dbus.Variant;
 public interface FirmapiuDInterface extends DBusInterface {
 	
 	//firma i file passati come parametro
-	public Map<String,Variant<?>> sign (String[] args,Map<String,Variant<?>> options);
+	public Map<String,Variant<?>> sign (Variant<?>[] args,Map<String,Variant<?>> options);
 	
 	//verifica la firma dei file passati come parametro
 	public Map<String,String> verify (String[] args);
