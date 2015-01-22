@@ -27,12 +27,15 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 	//resource bundle di FirmapiuD
 	private final ResourceBundle localrb;
 	
+	private int prova;
+	
 	public FirmapiuDImpl() {
 		super();
 		ResourceBundle rb = ResourceBundle.getBundle("firmapiu.lang.locale",Locale.getDefault());
 		this.localrb = ResourceBundle.getBundle("firmapiud.lang.locale",Locale.getDefault());
 		//FIXME da cambiare nel momento in cui si riscrive libreria
 		this.cmdInterface=new CommandProxyInterface(rb);
+		this.prova=0;
 	}
 
 	/* (non-Javadoc)
@@ -50,6 +53,9 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 	@Override
 	public Map<String, Variant<?>> sign(Variant<?>[] args,
 			Map<String, Variant<?>> options) {
+		System.out.println("Stesso oggetto?? prova ->"+prova);
+		prova++;
+		
 		// TODO Auto-generated method stub
 		//FIXME da cambiare nel momento in cui si riscrive libreria
 		//linka l'implementazione concreta del demone alla libreria firmapiulib
@@ -96,8 +102,9 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 			else if(oldValue instanceof Exception)
 			{
 				//FIXME da fissare con struct
-				String str="666 : "+oldValue.getClass().getCanonicalName()+" : "+((Exception)oldValue).getLocalizedMessage();
-				newValue=new Variant<Object>(str,"s");
+				String str=oldValue.getClass().getCanonicalName()+" : "+((Exception)oldValue).getLocalizedMessage();
+				FirmapiuExceptionStruct struct = new FirmapiuExceptionStruct(666,str);
+				newValue=new Variant<Object>(struct,"(is)");
 			}else
 				throw new DBusExecutionException(localrb.getString("error3f")+" : "+localrb.getString("error4f"));
 			dbusResult.put(key, newValue);

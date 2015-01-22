@@ -11,6 +11,7 @@ import firmapiu.CommandProxyInterface;
 import it.libersoft.FirmapiuDInterface;
 
 import org.freedesktop.dbus.DBusConnection;
+import org.freedesktop.dbus.Struct;
 import org.freedesktop.dbus.Variant;
 import org.freedesktop.dbus.exceptions.DBusException;
 
@@ -45,11 +46,15 @@ class FirmapiuTestClient {
 		
 		//CODICE DI FIRMA---------------------------->
 		
+<<<<<<< HEAD
 		//String[] paths={"/prova1","/home/andy/firmapiu/README.txt"};
 		Variant<String> str = new Variant<String>("Prova","s");
 		Variant<?>[] paths={str};
+=======
+		String[] paths={"/prova1"};
+>>>>>>> local
 		Map<String,Variant<?>> options = new TreeMap<String,Variant<?>>();
-		options.put(CommandProxyInterface.PIN, new Variant<Object>("12345678"));
+		options.put(CommandProxyInterface.PIN, new Variant<Object>("87654321"));
 		options.put(CommandProxyInterface.OUTDIR, new Variant<Object>("/home/andy/Scrivania"));
 		Map<String,Variant<?>> result=remote.sign(paths, options);
 		
@@ -58,13 +63,21 @@ class FirmapiuTestClient {
 		while(itr.hasNext()){
 			String key=itr.next();
 			System.out.println("Key: "+key);
-			System.out.println("\t"+(String)(result.get(key).getValue()));
+			Struct struct=(Struct)(result.get(key).getValue());
+			Object[] obj=struct.getParameters();
+			System.out.println("\tcode:"+obj[0]+" "+" message"+obj[1]);
+			System.out.println("Struct -> "+struct);
 		}
 		
 		
 		//CODICE DI VERIFICA---------------------------->
+<<<<<<< HEAD
 		//String[] paths={"/home/andy/Scrivania/README.txt.p7m","/home/andy/Scrivania/Cose da Fare.txt.p7m","/pippulus"};
 		/*String[] paths={"/home/andy/Scrivania/t.txt.p7m"};
+=======
+		/*String[] paths={"/home/andy/Scrivania/README.txt.p7m","/home/andy/Scrivania/Cose da Fare.txt.p7m","/pippulus"};
+		//String[] paths={"/home/andy/Scrivania/t.txt.p7m"};
+>>>>>>> local
 		Map<String,String> result=remote.verify(paths);
 		Iterator<String> itr=result.keySet().iterator();
 		while(itr.hasNext()){
