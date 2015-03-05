@@ -34,6 +34,14 @@ public class FirmapiuD {
 		//carica il logger//Logger associato alla classe
 		final Logger LOGGER=Logger.getLogger(FirmapiuD.class.getCanonicalName());
 		
+		//setta esplicitamente il path della libreria nativa libunix-java.so poiché 
+		//dbus potrebbe non essere in grado di trovarlo
+		//System.setProperty("java.library.path", "/usr/lib/jni");
+		System.out.println(System.getProperty("java.library.path"));
+		/*System.load("/usr/lib/jni/libunix-java.so");
+		System.loadLibrary("unix-java");*/
+		
+		
 		//Si connette al demone dbus
 		DBusConnection dbusconn=null;
 		try {

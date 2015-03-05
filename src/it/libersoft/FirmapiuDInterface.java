@@ -23,6 +23,6 @@ public interface FirmapiuDInterface extends DBusInterface {
 	public Map<String,Variant<?>> sign (Variant<?>[] args,Map<String,Variant<?>> options);
 	
 	//verifica la firma dei file passati come parametro
-	public Map<String,String> verify (String[] args);
+	public Map<String,String> verify (Variant<?>[] args);
 
 }

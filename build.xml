@@ -8,9 +8,9 @@
 	<property environment="env"/>
 
     <property name="bin" location="./bin" />
-	<property name="firmapiulibin" location="/home/andy/libersoftspace/firmapiu/bin" />
+	<property name="firmapiulibin" location="/home/andy/libersoftspace/it.libersoft.firmapiu/bin" />
     <property name="lib" location="./lib" />
-	<property name="firmapiulibconfig" location="/home/andy/libersoftspace/firmapiu/config" />
+	<property name="firmapiulibconfig" location="/home/andy/libersoftspace/it.libersoft.firmapiu/config" />
 	<property name="firmapiud" location="${env.HOME}/firmapiud" />
 	
 	<!-- Operazioni -->
@@ -55,6 +55,6 @@
 			<fileset dir="${firmapiulibconfig}"/>
 		</copy>
 		<copy file="./firmapiu_d" todir="${firmapiud}"/>
-		<!--<copy file="README.txt" todir="${firmapiu}"/>-->
+		<!--<copy file="README.txt" todir="${it.libersoft.firmapiu}"/>-->
 	</target>
 </project>

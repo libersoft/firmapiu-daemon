@@ -7,8 +7,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
-import firmapiu.CommandProxyInterface;
 import it.libersoft.FirmapiuDInterface;
+import it.libersoft.firmapiu.cades.CommandProxyInterface;
 
 import org.freedesktop.dbus.DBusConnection;
 import org.freedesktop.dbus.Struct;
@@ -46,13 +46,10 @@ class FirmapiuTestClient {
 		
 		//CODICE DI FIRMA---------------------------->
 		
-<<<<<<< HEAD
-		//String[] paths={"/prova1","/home/andy/firmapiu/README.txt"};
-		Variant<String> str = new Variant<String>("Prova","s");
+		//String[] paths={"/prova1","/home/andy/it.libersoft.firmapiu/README.txt"};
+		Variant<String> str = new Variant<String>("/Prova","s");
 		Variant<?>[] paths={str};
-=======
-		String[] paths={"/prova1"};
->>>>>>> local
+
 		Map<String,Variant<?>> options = new TreeMap<String,Variant<?>>();
 		options.put(CommandProxyInterface.PIN, new Variant<Object>("87654321"));
 		options.put(CommandProxyInterface.OUTDIR, new Variant<Object>("/home/andy/Scrivania"));
@@ -71,19 +68,22 @@ class FirmapiuTestClient {
 		
 		
 		//CODICE DI VERIFICA---------------------------->
-<<<<<<< HEAD
 		//String[] paths={"/home/andy/Scrivania/README.txt.p7m","/home/andy/Scrivania/Cose da Fare.txt.p7m","/pippulus"};
-		/*String[] paths={"/home/andy/Scrivania/t.txt.p7m"};
-=======
-		/*String[] paths={"/home/andy/Scrivania/README.txt.p7m","/home/andy/Scrivania/Cose da Fare.txt.p7m","/pippulus"};
 		//String[] paths={"/home/andy/Scrivania/t.txt.p7m"};
->>>>>>> local
-		Map<String,String> result=remote.verify(paths);
-		Iterator<String> itr=result.keySet().iterator();
-		while(itr.hasNext()){
-			String key=itr.next();
+
+		//String[] paths={"/home/andy/Scrivania/README.txt.p7m","/home/andy/Scrivania/Cose da Fare.txt.p7m","/pippulus"};
+		//String[] paths={"/home/andy/Scrivania/t.txt.p7m"};
+		/*Variant<String> str1 = new Variant<String>("/home/andy/Scrivania/README.txt.p7m","s");
+		Variant<String> str2 = new Variant<String>("/home/andy/Scrivania/Cose da Fare.txt.p7m","s");
+		Variant<String> str3 = new Variant<String>("/Prova","s");
+		Variant<?>[] paths2={str1,str2,str3};
+		
+		Map<String,String> result2=remote.verify(paths2);
+		Iterator<String> itr2=result2.keySet().iterator();
+		while(itr2.hasNext()){
+			String key=itr2.next();
 			System.out.println("Key: "+key);
-			System.out.println("\t"+result.get(key));
+			System.out.println("\t"+result2.get(key));
 		}*/
 		
 		

@@ -3,6 +3,8 @@
  */
 package it.libersoft;
 
+import it.libersoft.firmapiu.cades.CommandProxyInterface;
+
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
@@ -13,8 +15,6 @@ import java.util.TreeSet;
 
 import org.freedesktop.dbus.Variant;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
-
-import firmapiu.CommandProxyInterface;
 
 /**
  * @author andy
@@ -27,11 +27,14 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 	//resource bundle di FirmapiuD
 	private final ResourceBundle localrb;
 	
+	//overide del path dove si carica la libreria per leggere la carta
+	private final static String DPATH="/etc/firmapiu";
+	
 	private int prova;
 	
 	public FirmapiuDImpl() {
 		super();
-		ResourceBundle rb = ResourceBundle.getBundle("firmapiu.lang.locale",Locale.getDefault());
+		ResourceBundle rb = ResourceBundle.getBundle("it.libersoft.firmapiu.lang.locale",Locale.getDefault());
 		this.localrb = ResourceBundle.getBundle("firmapiud.lang.locale",Locale.getDefault());
 		//FIXME da cambiare nel momento in cui si riscrive libreria
 		this.cmdInterface=new CommandProxyInterface(rb);
@@ -78,6 +81,9 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 			}
 		}
 		
+		//overide del path dove si carica la libreria per leggere la carta
+		commandoptions.put(CommandProxyInterface.DRIVERPATH, DPATH);
+		
 		//in caso di eccezione la rilancia come errore di dbus
 		Map<String,?> result;
 		try {
@@ -117,15 +123,15 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 	 * @see it.libersoft.FirmapiuDInterface#verify(java.lang.String[])
 	 */
 	@Override
-	public Map<String,String> verify(String[] args) {
+	public Map<String,String> verify(Variant<?>[] args) {
 		// TODO Auto-generated method stub
 		//FIXME da cambiare quando si cambia libreria
 		//prepara i parametri da passare a firmapiulib
 		if (args==null || args.length==0)
 			throw new DBusExecutionException(localrb.getString("error0"));
 		Set<String> commandargs=new TreeSet<String>();
-		for(String arg : args)
-			commandargs.add(arg);
+		for(Variant<?> arg : args)
+			commandargs.add((String)arg.getValue());
 		
 		Map<String,?> result=this.cmdInterface.verify(commandargs, null);
 		

@@ -8,7 +8,7 @@ import org.freedesktop.dbus.Struct;
 
 /**
  * Questa classe realizza una struct utilizzata da dbus per passare al chiamante, in caso di un errore interno alla libreria
- * firmapiu, un codice di errore e il messaggio di errore relativo
+ * it.libersoft.firmapiu, un codice di errore e il messaggio di errore relativo
  * 
  * @author dellanna
  *
