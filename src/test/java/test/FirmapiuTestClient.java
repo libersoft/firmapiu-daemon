@@ -1,14 +1,15 @@
 /**
  * 
  */
-package firmapiud;
+package test;
 
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 
-import it.libersoft.FirmapiuDInterface;
 import it.libersoft.firmapiu.cades.CommandProxyInterface;
+import it.libersoft.firmapiud.FirmapiuD;
+import it.libersoft.firmapiud.dbusinterface.FirmapiuDInterface;
 
 import org.freedesktop.dbus.DBusConnection;
 import org.freedesktop.dbus.Struct;
@@ -46,7 +47,7 @@ class FirmapiuTestClient {
 		
 		//CODICE DI FIRMA---------------------------->
 		
-		//String[] paths={"/prova1","/home/andy/it.libersoft.firmapiu/README.txt"};
+		//String[] paths={"/prova1","/home/andy/it.libersoft.firmapiud.dbusinterface.firmapiu/README.txt"};
 		Variant<String> str = new Variant<String>("/Prova","s");
 		Variant<?>[] paths={str};
 

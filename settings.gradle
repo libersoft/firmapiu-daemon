@@ -16,4 +16,4 @@ include 'api'
 include 'services:webservice'
 */
 
-rootProject.name = 'firmapiud'
+rootProject.name = 'it.libersoft.firmapiud'

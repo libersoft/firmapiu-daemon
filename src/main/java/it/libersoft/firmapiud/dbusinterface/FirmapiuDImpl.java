@@ -1,7 +1,7 @@
 /**
  * 
  */
-package it.libersoft;
+package it.libersoft.firmapiud.dbusinterface;
 
 import it.libersoft.firmapiu.Data;
 import it.libersoft.firmapiu.DataFilePath;
@@ -25,7 +25,7 @@ import org.freedesktop.dbus.Variant;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 
 /**
- * @author andy
+ * @author dellanna
  *
  */
 public final class FirmapiuDImpl implements FirmapiuDInterface {
@@ -43,8 +43,8 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 	
 	public FirmapiuDImpl() {
 		super();
-		ResourceBundle rb = ResourceBundle.getBundle("it.libersoft.firmapiu.lang.locale",Locale.getDefault());
-		this.localrb = ResourceBundle.getBundle("firmapiud.lang.locale",Locale.getDefault());
+		ResourceBundle rb = ResourceBundle.getBundle("it.libersoft.firmapiud.lang.locale",Locale.getDefault());
+		this.localrb = ResourceBundle.getBundle("it.libersoft.firmapiud.lang.locale",Locale.getDefault());
 		//FIXME da cambiare nel momento in cui si riscrive libreria
 		this.cmdInterface=new CommandProxyInterface(rb);
 		cadesBesInterface = MasterFactoryBuilder.getFactory(CADESBESFACTORY).getCadesBESCommandInterface(P7MFILE);
@@ -61,7 +61,7 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 	}
 
 	/* (non-Javadoc)
-	 * @see it.libersoft.FirmapiuDInterface#sign(java.lang.String[], java.util.Map)
+	 * @see it.libersoft.firmapiud.dbusinterface.FirmapiuDInterface#sign(java.lang.String[], java.util.Map)
 	 */
 	@Override
 	public Map<String, Variant<?>> sign(Variant<?>[] args,
@@ -138,7 +138,7 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 	}
 
 	/* (non-Javadoc)
-	 * @see it.libersoft.FirmapiuDInterface#verify(java.lang.String[])
+	 * @see it.libersoft.firmapiud.dbusinterface.FirmapiuDInterface#verify(java.lang.String[])
 	 */
 	@Override
 	public Map<String,String> verify(Variant<?>[] args) {

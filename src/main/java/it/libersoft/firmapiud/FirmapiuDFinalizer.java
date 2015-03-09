@@ -1,7 +1,7 @@
 /**
  * 
  */
-package firmapiud;
+package it.libersoft.firmapiud;
 
 import java.util.ResourceBundle;
 import java.util.logging.Logger;

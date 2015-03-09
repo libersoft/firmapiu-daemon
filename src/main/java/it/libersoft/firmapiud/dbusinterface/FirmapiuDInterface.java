@@ -1,7 +1,7 @@
 /**
  * 
  */
-package it.libersoft;
+package it.libersoft.firmapiud.dbusinterface;
 
 import java.util.Map;
 
@@ -15,7 +15,7 @@ import org.freedesktop.dbus.Variant;
  */
 
 
-@DBusInterfaceName("it.libersoft.FirmapiuDInterface") 
+@DBusInterfaceName("it.libersoft.firmapiud.dbusinterface.FirmapiuDInterface") 
 //@DBusInterfaceName("org.freedesktop.FirmapiuDInterface")
 public interface FirmapiuDInterface extends DBusInterface {
 	

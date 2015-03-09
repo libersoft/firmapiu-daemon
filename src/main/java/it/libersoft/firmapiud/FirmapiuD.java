@@ -1,10 +1,10 @@
 /**
  * 
  */
-package firmapiud;
+package it.libersoft.firmapiud;
 
-import it.libersoft.FirmapiuDImpl;
-import it.libersoft.FirmapiuDInterface;
+import it.libersoft.firmapiud.dbusinterface.FirmapiuDImpl;
+import it.libersoft.firmapiud.dbusinterface.FirmapiuDInterface;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -19,8 +19,8 @@ import org.freedesktop.dbus.exceptions.DBusException;
  */
 public class FirmapiuD {
 
-	final static String BUSNAME="it.libersoft.FirmapiuDInterface";
-	final static String OBJECTPATH="/it/libersoft/FirmapiuD";
+	final static String BUSNAME="it.libersoft.firmapiud.dbusinterface.FirmapiuDInterface";
+	final static String OBJECTPATH="/it/libersoft/firmapiud/FirmapiuD";
 	/*final static String BUSNAME="org.freedesktop.FirmapiuDInterface";
 	final static String OBJECTPATH="/org/freedesktop/FirmapiuD";*/
 	
@@ -30,7 +30,7 @@ public class FirmapiuD {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		//carica il resouce bundle
-		ResourceBundle rb = ResourceBundle.getBundle("firmapiud.lang.locale",Locale.getDefault());
+		ResourceBundle rb = ResourceBundle.getBundle("it.libersoft.firmapiud.lang.locale",Locale.getDefault());
 		//carica il logger//Logger associato alla classe
 		final Logger LOGGER=Logger.getLogger(FirmapiuD.class.getCanonicalName());
 		

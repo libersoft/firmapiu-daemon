@@ -5,4 +5,4 @@
  * @author dellanna
  *
  */
-package firmapiud.lang;
+package it.libersoft.firmapiud.lang;
