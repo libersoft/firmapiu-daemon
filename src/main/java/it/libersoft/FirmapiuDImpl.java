@@ -3,7 +3,15 @@
  */
 package it.libersoft;
 
+import it.libersoft.firmapiu.Data;
+import it.libersoft.firmapiu.DataFilePath;
+import it.libersoft.firmapiu.GenericArgument;
+import it.libersoft.firmapiu.MasterFactoryBuilder;
+import it.libersoft.firmapiu.cades.CadesBESCommandInterface;
+import it.libersoft.firmapiu.exception.FirmapiuException;
 import it.libersoft.firmapiu.cades.CommandProxyInterface;
+import static it.libersoft.firmapiu.consts.FactoryConsts.*;
+import static it.libersoft.firmapiu.consts.FactoryPropConsts.*;
 
 import java.util.Iterator;
 import java.util.Locale;
@@ -24,6 +32,7 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 
 	//FIXME da cambiare nel momento in cui si riscrive libreria
 	private final CommandProxyInterface cmdInterface;
+	private final CadesBESCommandInterface cadesBesInterface;
 	//resource bundle di FirmapiuD
 	private final ResourceBundle localrb;
 	
@@ -38,6 +47,7 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 		this.localrb = ResourceBundle.getBundle("firmapiud.lang.locale",Locale.getDefault());
 		//FIXME da cambiare nel momento in cui si riscrive libreria
 		this.cmdInterface=new CommandProxyInterface(rb);
+		cadesBesInterface = MasterFactoryBuilder.getFactory(CADESBESFACTORY).getCadesBESCommandInterface(P7MFILE);
 		this.prova=0;
 	}
 
@@ -65,29 +75,36 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 		//prepara i parametri da passare a firmapiulib
 		if (args==null || args.length==0)
 			throw new DBusExecutionException(localrb.getString("error0"));
-		Set<String> commandargs=new TreeSet<String>();
-		for(Variant<?> arg : args)
-			commandargs.add((String)arg.getValue());
+		DataFilePath dataFile= (DataFilePath)MasterFactoryBuilder.getFactory(DATAFACTORY).getData(DATAFILEPATH);
+		for(Variant<?> arg : args){
+			try {
+				dataFile.setData((String)arg.getValue());
+			} catch (FirmapiuException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				throw new DBusExecutionException(localrb.getString("error0")+" : <"+e.errorCode+"> "+e.getLocalizedMessage());
+			}
+		}
 		
-		Map<String,Object> commandoptions=null;
+		GenericArgument arguments=null;
 		if(options!=null){
-			commandoptions=new TreeMap<String,Object>();
+			arguments=(GenericArgument)MasterFactoryBuilder.getFactory(ARGUMENTFACTORY).getArgument(GENERICARGUMENT);
 			Iterator<String> itr=options.keySet().iterator();
 			while(itr.hasNext()){
 				//deve fare l'unmarshalling delle opzioni da quelle ricevute in ingresso a quelle richieste da sign
 				String key=itr.next();
 				Object value = unmarshall(key, options.get(key));
-				commandoptions.put(key, value);
+				arguments.setArgument(key, value);
 			}
 		}
 		
 		//overide del path dove si carica la libreria per leggere la carta
-		commandoptions.put(CommandProxyInterface.DRIVERPATH, DPATH);
+		//commandoptions.put(CommandProxyInterface.DRIVERPATH, DPATH);
 		
 		//in caso di eccezione la rilancia come errore di dbus
-		Map<String,?> result;
+		Map<?,?> result;
 		try {
-			result=cmdInterface.sign(commandargs, commandoptions);
+			result=cadesBesInterface.sign(dataFile, arguments);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block: da sistemare i log
 			e.printStackTrace();
@@ -96,20 +113,21 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 		
 		//effettua il marshalling dei risultati da inviare a dbus
 		Map<String,Variant<?>> dbusResult = new TreeMap<String,Variant<?>>();
-		Iterator<String> itr=result.keySet().iterator();
+		Iterator<?> itr=result.keySet().iterator();
 		while(itr.hasNext()){
-			String key=itr.next();
+			String key=(String)itr.next();
 			Object oldValue=result.get(key);
 			Variant<?> newValue;
 			if(oldValue instanceof String)
 			{
 				newValue=new Variant<Object>(oldValue,"s");
 			}
-			else if(oldValue instanceof Exception)
+			else if(oldValue instanceof FirmapiuException)
 			{
 				//FIXME da fissare con struct
-				String str=oldValue.getClass().getCanonicalName()+" : "+((Exception)oldValue).getLocalizedMessage();
-				FirmapiuExceptionStruct struct = new FirmapiuExceptionStruct(666,str);
+				//String str=oldValue.getClass().getCanonicalName()+" : "+((Exception)oldValue).getLocalizedMessage();
+				FirmapiuException fe1=(FirmapiuException) oldValue;
+				FirmapiuExceptionStruct struct = new FirmapiuExceptionStruct(fe1.errorCode,fe1.getLocalizedMessage());
 				newValue=new Variant<Object>(struct,"(is)");
 			}else
 				throw new DBusExecutionException(localrb.getString("error3f")+" : "+localrb.getString("error4f"));
