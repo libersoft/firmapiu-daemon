@@ -14,7 +14,7 @@ import org.freedesktop.dbus.DBusConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 
 /**
- * @author andy
+ * @author dellanna
  *
  */
 public class FirmapiuD {
@@ -100,7 +100,4 @@ public class FirmapiuD {
 			System.exit(-1);
 		}//fine try-catch
 	}//fine main
-	
-	
-
 }

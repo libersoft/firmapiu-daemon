@@ -25,4 +25,6 @@ public interface FirmapiuDInterface extends DBusInterface {
 	//verifica la firma dei file passati come parametro
 	public Map<String,String> verify (Variant<?>[] args);
 
+	//restituisce l'originale di un file contenuto in una busta crittografica  p7m 
+	public Map<String,Variant<?>> getContentSignedData(Variant<?>[] args,Map<String,Variant<?>> options);
 }

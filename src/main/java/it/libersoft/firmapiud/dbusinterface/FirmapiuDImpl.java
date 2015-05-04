@@ -22,6 +22,7 @@ import static it.libersoft.firmapiu.consts.FactoryPropConsts.*;
 import static it.libersoft.firmapiu.consts.ArgumentConsts.*;
 
 import java.io.File;
+import java.lang.reflect.Type;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
@@ -30,8 +31,10 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.freedesktop.dbus.Struct;
 import org.freedesktop.dbus.Variant;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
+import org.freedesktop.dbus.types.DBusStructType;
 
 /**
  * @author dellanna
@@ -78,44 +81,10 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 		System.out.println("Stesso oggetto?? prova ->"+prova);
 		prova++;
 		
-		//FIXME da cambiare nel momento in cui si riscrive libreria
-		//linka l'implementazione concreta del demone alla libreria firmapiulib
-		//prepara i parametri da passare a firmapiulib
-		if (args==null || args.length==0)
-			throw new DBusExecutionException(localrb.getString("error0"));
+		//fa l'unmarshalling dei parametri di ingresso e del pin
 		DataFile dataFile= DataFactoryBuilder.getFactory(DATAFILEFACTORY).getDataFile();
-		for(Variant<?> arg : args){
-			try {
-				File file = new File((String)arg.getValue());
-				dataFile.setData(file);
-			} catch (FirmapiuException e) {
-				e.printStackTrace();
-				throw new DBusExecutionException(localrb.getString("error0")+" : <"+e.errorCode+"> "+e.getLocalizedMessage());
-			}
-		}
-		//setta le opzioni
-		//GenericArgument arguments=null;
-		String pin=null;
-		if(options!=null){
-			//arguments=(GenericArgument)MasterFactoryBuilder.getFactory(ARGUMENTFACTORY).getArgument(GENERICARGUMENT);
-			Iterator<String> itr=options.keySet().iterator();
-			while(itr.hasNext()){
-				//deve fare l'unmarshalling delle opzioni da quelle ricevute in ingresso a quelle richieste da sign
-				String key=itr.next();
-				//il pin deve essere salvato a parte
-				//TODO controllare che questa rappresentazione vada bene
-				String value = unmarshall(options.get(key));
-				if (key.equals(TOKENPIN))
-					pin=value;
-				else
-					try {
-						dataFile.setArgument(key, value);
-					} catch (FirmapiuException e) {
-						e.printStackTrace();
-						throw new DBusExecutionException(localrb.getString("error3f")+" : "+e.getLocalizedMessage());
-					}
-			}
-		}
+		String pin = unmarshallDataFile(dataFile, args, options);
+		
 		if(pin==null)
 			throw new DBusExecutionException(localrb.getString("error0p")+" : "+TOKENPIN);
 		
@@ -147,31 +116,8 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 			} catch (Exception e){}
 		}
 		
-		//effettua il marshalling dei risultati da inviare a dbus
-		Map<String,Variant<?>> dbusResult = new TreeMap<String,Variant<?>>();
-		Iterator<File> itr;
-		try {
-			itr = result.getResultDataSet().iterator();
-		} catch (FirmapiuException e) {
-			e.printStackTrace();
-			throw new DBusExecutionException(localrb.getString("error3f")+" : "+e.getLocalizedMessage());
-		}
-		while(itr.hasNext()){
-			File keyFile=itr.next();
-			String key=keyFile.getAbsolutePath();
-			Variant<?> newValue;
-			try {
-				File oldValue=result.getResult(keyFile);
-				newValue=new Variant<String>(oldValue.getAbsolutePath(),"s");
-			} catch (FirmapiuException e) {
-				e.printStackTrace();
-				FirmapiuExceptionStruct struct = new FirmapiuExceptionStruct(e.errorCode,e.getLocalizedMessage());
-				newValue=new Variant<Object>(struct,"(is)");
-			}
-			dbusResult.put(key, newValue);
-		}//fine while
-		
-		return dbusResult;
+		//fa il marshalling del risultato ottenuto
+		return marshallFile(result);
 		
 //			if(oldValue instanceof String)
 //			{
@@ -229,6 +175,26 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 		return dbusResult;
 	}
 	
+	@Override
+	public Map<String, Variant<?>> getContentSignedData(Variant<?>[] args,
+			Map<String, Variant<?>> options) {
+		//fa l'unmarshalling dei parametri di ingresso
+		DataFile dataFile= DataFactoryBuilder.getFactory(DATAFILEFACTORY).getDataFile();
+		unmarshallDataFile(dataFile, args, options);
+		
+		//crea l'interfaccia di comando e recupera il contenuto originale dei file
+		ResultInterface<File,File> result=null;
+		
+		P7FileCommandInterface p7CommandInterface=CadesBESFactory.getFactory().getP7FileCommandInterface(null,null);
+		try {
+			result=p7CommandInterface.getContentSignedData(dataFile);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new DBusExecutionException(localrb.getString("error3c")+" : "+e.getLocalizedMessage());
+		}
+		//fa il marshalling del risultato ottenuto
+		return marshallFile(result);
+	}
 	
 	//PROCEDURE PRIVATE
 	//TODO ricorda di definire nella documentazione le opzioni messe a disposizione e i tipi che dbus associa a queste opzioni
@@ -254,7 +220,51 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 //			throw new DBusExecutionException(key+" : "+localrb.getString("error1"));
 //	}
 	
-	private String unmarshall(Variant<?> value){
+	//fa l'unmashalling dei parametri riveuti in ingresso
+	//restituisce il pin (può essere uguale a null)
+	private String unmarshallDataFile(DataFile dataFile, Variant<?>[] args,Map<String, Variant<?>> options ){
+		//FIXME da cambiare nel momento in cui si riscrive libreria
+		//linka l'implementazione concreta del demone alla libreria firmapiulib
+		//prepara i parametri da passare a firmapiulib
+		if (args==null || args.length==0)
+			throw new DBusExecutionException(localrb.getString("error0"));
+		//DataFile dataFile= DataFactoryBuilder.getFactory(DATAFILEFACTORY).getDataFile();
+		for(Variant<?> arg : args){
+			try {
+				File file = new File((String)arg.getValue());
+				dataFile.setData(file);
+			} catch (FirmapiuException e) {
+				e.printStackTrace();
+				throw new DBusExecutionException(localrb.getString("error0")+" : <"+e.errorCode+"> "+e.getLocalizedMessage());
+			}
+		}
+		//setta le opzioni
+		//GenericArgument arguments=null;
+		String pin=null;
+		if(options!=null){
+			//arguments=(GenericArgument)MasterFactoryBuilder.getFactory(ARGUMENTFACTORY).getArgument(GENERICARGUMENT);
+			Iterator<String> itr=options.keySet().iterator();
+			while(itr.hasNext()){
+				//deve fare l'unmarshalling delle opzioni da quelle ricevute in ingresso a quelle richieste da sign
+				String key=itr.next();
+				//il pin deve essere salvato a parte
+				String value = unmarshallOptions(options.get(key));
+				if (key.equals(TOKENPIN))
+					pin=value;
+				else
+					try {
+						dataFile.setArgument(key, value);
+					} catch (FirmapiuException e) {
+						e.printStackTrace();
+						throw new DBusExecutionException(localrb.getString("error3f")+" : "+e.getLocalizedMessage());
+					}
+			}
+		}
+		
+		return pin;
+	}//fine metodo
+	
+	private String unmarshallOptions(Variant<?> value){
 		//i tipi dei valori possono essere solo basic types (Stringhe e Boolean)
 		if(value.getSig().equals("s")){
 			return (String)(value.getValue());
@@ -263,5 +273,34 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 			return valBool.toString();
 		}else
 			throw new DBusExecutionException(localrb.getString("error0"));	
+	}
+
+	//fa il marshalling dei risultati ottenuti in uscita
+	private Map<String,Variant<?>> marshallFile(ResultInterface<File, File>result){
+		//effettua il marshalling dei risultati da inviare a dbus
+		Map<String,Variant<?>> dbusResult = new TreeMap<String,Variant<?>>();
+		Iterator<File> itr=null;
+		try {
+			itr = result.getResultDataSet().iterator();
+		} catch (FirmapiuException e) {
+			e.printStackTrace();
+			throw new DBusExecutionException(localrb.getString("error3f")+" : "+e.getLocalizedMessage());
+		}
+		while(itr.hasNext()){
+			File keyFile=itr.next();
+			String key=keyFile.getAbsolutePath();
+			Variant<?> newValue;
+			try {
+				File oldValue=result.getResult(keyFile);
+				newValue=new Variant<String>(oldValue.getAbsolutePath(),"s");
+			} catch (FirmapiuException e) {
+				e.printStackTrace();
+				FirmapiuExceptionStruct struct = new FirmapiuExceptionStruct(e.errorCode,e.getLocalizedMessage());
+				newValue=new Variant<FirmapiuExceptionStruct>(struct,FirmapiuExceptionStruct.class);
+			}
+			dbusResult.put(key, newValue);
+		}//fine while
+
+		return dbusResult;
 	}
 }

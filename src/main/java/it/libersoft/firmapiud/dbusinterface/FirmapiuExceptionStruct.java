@@ -13,14 +13,14 @@ import org.freedesktop.dbus.Struct;
  * @author dellanna
  *
  */
-class FirmapiuExceptionStruct extends Struct {
+public class FirmapiuExceptionStruct extends Struct {
 	@Position(0)  
-	final int code;  
+	public final Integer code;  
 	@Position(1)  
-	final String message;
+	public final String message;
 	
 	
-	FirmapiuExceptionStruct(int code, String message) {
+	public FirmapiuExceptionStruct(Integer code, String message) {
 		super();
 		this.code = code;
 		this.message = message;
