@@ -12,7 +12,7 @@ import org.freedesktop.dbus.exceptions.DBusException;
 /**
  * Finalizzatore per la chiusura di FirmapiuD in caso di chiusura forzata
  * 
- * @author andy
+ * @author dellanna
  *
  */
 class FirmapiuDFinalizer extends Thread {
@@ -35,17 +35,20 @@ class FirmapiuDFinalizer extends Thread {
 	public void run() {
 		//cerca di chiudere la connessione su dbus in caso di chiusura forzata dell'applicazione
 		logger.info(rb.getString("forceclose0"));
-		//cerca di rilasciare il dbusname
+		//cerca di rilasciare il dbusname di Firmapiud e Token Manager
 		try {
-			dbusconn.releaseBusName(FirmapiuD.BUSNAME);
-			logger.info(rb.getString("close1")+": "+FirmapiuD.BUSNAME);
+			dbusconn.releaseBusName(FirmapiuD.BUSNAME1);
+			logger.info(rb.getString("close1")+": "+FirmapiuD.BUSNAME1);
 		} catch (DBusException e) {
-			logger.severe(rb.getString("close2")+": "+FirmapiuD.BUSNAME);
-			
-			// TODO Auto-generated catch block
+			logger.severe(rb.getString("close2")+": "+FirmapiuD.BUSNAME1);
 			e.printStackTrace();
-			
-			
+		}
+		try {
+			dbusconn.releaseBusName(FirmapiuD.BUSNAME2);
+			logger.info(rb.getString("close1")+": "+FirmapiuD.BUSNAME2);
+		} catch (DBusException e) {
+			logger.severe(rb.getString("close2")+": "+FirmapiuD.BUSNAME2);
+			e.printStackTrace();
 		}
 		dbusconn.disconnect();
 		logger.info(rb.getString("close3"));
