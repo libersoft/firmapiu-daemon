@@ -15,5 +15,9 @@ include 'shared'
 include 'api'
 include 'services:webservice'
 */
+//include il progetto della libreria
+include 'libfirmapiu-java'
 
 rootProject.name = 'firmapiu-daemon'
+
+project(":libfirmapiu-java").projectDir = file("../firmapiulib")
