@@ -4,6 +4,7 @@
 package it.libersoft.firmapiud.dbusinterface;
 
 import it.libersoft.firmapiu.Data;
+import it.libersoft.firmapiu.Report;
 import it.libersoft.firmapiu.ResultInterface;
 //import it.libersoft.firmapiu.DataFilePath;
 //import it.libersoft.firmapiu.GenericArgument;
@@ -13,6 +14,7 @@ import it.libersoft.firmapiu.cades.CadesBESFactory;
 import it.libersoft.firmapiu.cades.P7FileCommandInterface;
 import it.libersoft.firmapiu.exception.FirmapiuException;
 import it.libersoft.firmapiu.cades.CommandProxyInterface;
+import it.libersoft.firmapiu.crtoken.KeyStoreToken;
 import it.libersoft.firmapiu.crtoken.PKCS11Token;
 import it.libersoft.firmapiu.crtoken.TokenFactoryBuilder;
 import it.libersoft.firmapiu.data.DataFactoryBuilder;
@@ -23,7 +25,9 @@ import static it.libersoft.firmapiu.consts.ArgumentConsts.*;
 
 import java.io.File;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -31,17 +35,20 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.bouncycastle.cms.SignerInformation;
 import org.freedesktop.dbus.Struct;
 import org.freedesktop.dbus.Variant;
 import org.freedesktop.dbus.exceptions.DBusExecutionException;
 import org.freedesktop.dbus.types.DBusStructType;
 
 /**
+ * 
  * @author dellanna
  *
  */
 public final class FirmapiuDImpl implements FirmapiuDInterface {
-
+	//TODO ricorda di definire nella documentazione le opzioni messe a disposizione e i tipi che dbus associa a queste opzioni
+	
 	//FIXME da cambiare nel momento in cui si riscrive libreria
 	private final CommandProxyInterface cmdInterface;
 	//interfaccia di comandi specializzata per la gestione di file .p7m .p7s
@@ -54,6 +61,9 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 	
 	private int prova;
 	
+	//keystore Token contente le CA usate come trust anchor
+	private KeyStoreToken tslKeystoreToken;
+	
 	public FirmapiuDImpl() {
 		super();
 		ResourceBundle rb = ResourceBundle.getBundle("it.libersoft.firmapiud.lang.locale",Locale.getDefault());
@@ -62,6 +72,12 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 		this.cmdInterface=new CommandProxyInterface(rb);
 		//this.p7CommandInterface = CadesBESFactory.getFactory().getP7FileCommandInterface();
 		this.prova=0;
+		//keystore token di una lista di CA fidate definite in una Trusted Store List.
+		try {
+			this.tslKeystoreToken=TokenFactoryBuilder.getFactory(KEYSTORETOKENFACTORY).getKeyStoreToken(TSLXMLKEYSTORE);
+		} catch (FirmapiuException e) {
+			e.printStackTrace();
+		}
 	}
 
 	/* (non-Javadoc)
@@ -142,38 +158,93 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 	 */
 	@Override
 	public Map<String,String> verify(Variant<?>[] args) {
-		//FIXME da cambiare quando si cambia libreria
-		//prepara i parametri da passare a firmapiulib
-		if (args==null || args.length==0)
-			throw new DBusExecutionException(localrb.getString("error0"));
-		Set<String> commandargs=new TreeSet<String>();
-		for(Variant<?> arg : args)
-			commandargs.add((String)arg.getValue());
-		
-		Map<String,?> result=this.cmdInterface.verify(commandargs, null);
-		
-		//effettua il marshalling dei risultati da inviare a dbus
-		Map<String,String> dbusResult = new TreeMap<String,String>();
-		Iterator<String> itr=result.keySet().iterator();
-		while(itr.hasNext()){
-			String key=itr.next();
-			Object oldValue=result.get(key);
-			String newValue;
-			if(oldValue instanceof Boolean)
-			{
-				newValue=new String(localrb.getString("verify0")+" : "+(Boolean)oldValue);
-			}
-			else if(oldValue instanceof Exception)
-			{
-				//FIXME da fissare con struct
-				String str="666 : "+oldValue.getClass().getCanonicalName()+" : "+((Exception)oldValue).getLocalizedMessage();
-				newValue=str;
-			}else
-				throw new DBusExecutionException(localrb.getString("error3v")+" : "+localrb.getString("error4v"));
-			dbusResult.put(key, newValue);
-		}//fine while
-		return dbusResult;
+//		//FIXME da cambiare quando si cambia libreria
+//		//prepara i parametri da passare a firmapiulib
+//		if (args==null || args.length==0)
+//			throw new DBusExecutionException(localrb.getString("error0"));
+//		Set<String> commandargs=new TreeSet<String>();
+//		for(Variant<?> arg : args)
+//			commandargs.add((String)arg.getValue());
+//		
+//		Map<String,?> result=this.cmdInterface.verify(commandargs, null);
+//		
+//		//effettua il marshalling dei risultati da inviare a dbus
+//		Map<String,String> dbusResult = new TreeMap<String,String>();
+//		Iterator<String> itr=result.keySet().iterator();
+//		while(itr.hasNext()){
+//			String key=itr.next();
+//			Object oldValue=result.get(key);
+//			String newValue;
+//			if(oldValue instanceof Boolean)
+//			{
+//				newValue=new String(localrb.getString("verify0")+" : "+(Boolean)oldValue);
+//			}
+//			else if(oldValue instanceof Exception)
+//			{
+//				//FIXME da fissare con struct
+//				String str="666 : "+oldValue.getClass().getCanonicalName()+" : "+((Exception)oldValue).getLocalizedMessage();
+//				newValue=str;
+//			}else
+//				throw new DBusExecutionException(localrb.getString("error3v")+" : "+localrb.getString("error4v"));
+//			dbusResult.put(key, newValue);
+//		}//fine while
+//		return dbusResult;
+		// TODO funzionalità di verifica di piu di un file non supportata: E' possibile che la funzionalità venga supportata in futuro
+		throw new DBusExecutionException(localrb.getString("error5"));
 	}
+	
+	@Override
+	public Map<String, Variant<?>>[] verifySingle(Variant<?> arg,
+			Map<String, Variant<?>> options) {
+		//TODO implementare un controllo meno rigido sul token usato per la verifica
+		//recupera il token contenente il keystore delle "trust anchor" utilizzate per controllare affidabilità del firmatario
+		if(this.tslKeystoreToken==null)
+			throw new DBusExecutionException(localrb.getString("error3vt"));
+		
+		//fa l'unmarshalling dei parametri di ingresso
+		DataFile dataFile= DataFactoryBuilder.getFactory(DATAFILEFACTORY).getDataFile();
+		unmarshallOptions(dataFile, options);
+		//se è definita l'opzione detached ed è true deve verificare un p7s
+		boolean detached=false;
+		if(options!=null && options.containsKey(DETACHED)){
+			Variant<?> val=options.get(DETACHED);
+			if (val.getSig().equals("b")){
+				detached=(Boolean)val.getValue();
+			}
+		}
+		if(detached){
+			//verifica un p7s: la variant passata come argomento deve essere ss
+			//TODO da supportare
+			throw new DBusExecutionException(localrb.getString("error5"));
+		}//fine ramo p7s
+		else{
+			//verifica un p7m: la variant passata come argomento deve essere s
+			//unmashall file da firmare
+			try {
+				if (arg.getSig().equals("s")){
+					File file = new File((String)arg.getValue());
+					dataFile.setData(file);
+				} else
+					throw new DBusExecutionException(localrb.getString("error0v")+" : <"+arg.getSig()+">");
+			} catch (FirmapiuException e) {
+				e.printStackTrace();
+				throw new DBusExecutionException(localrb.getString("error0")+" : <"+e.errorCode+"> "+e.getLocalizedMessage());
+			}
+		
+			//crea l'interfaccia di comando e verifica la busta crittografica passata come parametro
+			ResultInterface<File,Report> result=null;
+			
+			P7FileCommandInterface p7CommandInterface=CadesBESFactory.getFactory().getP7FileCommandInterface(null,this.tslKeystoreToken);
+			try {
+				result=p7CommandInterface.verify(dataFile);
+			} catch (FirmapiuException e) {
+				e.printStackTrace();
+				throw new DBusExecutionException(localrb.getString("error3v")+" : "+e.getLocalizedMessage());
+			}
+			
+			return marshallVerifyResult(result);
+		}//fine ramo p7m
+	}//fine metodo
 	
 	@Override
 	public Map<String, Variant<?>> getContentSignedData(Variant<?>[] args,
@@ -197,7 +268,6 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 	}
 	
 	//PROCEDURE PRIVATE
-	//TODO ricorda di definire nella documentazione le opzioni messe a disposizione e i tipi che dbus associa a queste opzioni
 	
 	//effettua l'unmarshalling delle opzioni ricevute in maniera tale da convertire il formato del valore delle opzioni
 	//ricevute da dbus in quello da passare alla libreria
@@ -222,22 +292,27 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 	
 	//fa l'unmashalling dei parametri riveuti in ingresso
 	//restituisce il pin (può essere uguale a null)
-	private String unmarshallDataFile(DataFile dataFile, Variant<?>[] args,Map<String, Variant<?>> options ){
-		//FIXME da cambiare nel momento in cui si riscrive libreria
-		//linka l'implementazione concreta del demone alla libreria firmapiulib
-		//prepara i parametri da passare a firmapiulib
+	private String unmarshallDataFile(DataFile dataFile, Variant<?>[] args,Map<String, Variant<?>> options){
 		if (args==null || args.length==0)
 			throw new DBusExecutionException(localrb.getString("error0"));
-		//DataFile dataFile= DataFactoryBuilder.getFactory(DATAFILEFACTORY).getDataFile();
 		for(Variant<?> arg : args){
 			try {
-				File file = new File((String)arg.getValue());
-				dataFile.setData(file);
+				if (arg.getSig().equals("s")){
+					File file = new File((String)arg.getValue());
+					dataFile.setData(file);
+				} else
+					throw new DBusExecutionException(localrb.getString("error0v")+" : <"+arg.getSig()+">");
 			} catch (FirmapiuException e) {
 				e.printStackTrace();
 				throw new DBusExecutionException(localrb.getString("error0")+" : <"+e.errorCode+"> "+e.getLocalizedMessage());
 			}
 		}
+		
+		return unmarshallOptions(dataFile, options);
+	}//fine metodo
+	
+	//fa l'unmarshalling delle opzioni associate al comando
+	private String unmarshallOptions(DataFile dataFile,Map<String, Variant<?>> options){
 		//setta le opzioni
 		//GenericArgument arguments=null;
 		String pin=null;
@@ -248,7 +323,7 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 				//deve fare l'unmarshalling delle opzioni da quelle ricevute in ingresso a quelle richieste da sign
 				String key=itr.next();
 				//il pin deve essere salvato a parte
-				String value = unmarshallOptions(options.get(key));
+				String value = unmarshallOptionsProcedure(options.get(key));
 				if (key.equals(TOKENPIN))
 					pin=value;
 				else
@@ -260,11 +335,11 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 					}
 			}
 		}
-		
 		return pin;
-	}//fine metodo
+	}
 	
-	private String unmarshallOptions(Variant<?> value){
+	//procedura privata eseguita durante l'unmarshalling delle opzioni
+	private String unmarshallOptionsProcedure(Variant<?> value){
 		//i tipi dei valori possono essere solo basic types (Stringhe e Boolean)
 		if(value.getSig().equals("s")){
 			return (String)(value.getValue());
@@ -275,6 +350,65 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 			throw new DBusExecutionException(localrb.getString("error0"));	
 	}
 
+	//fa il mashalling del risultato ottenuto dall'operazione di verifica
+	public Map<String, Variant<?>>[] marshallVerifyResult(ResultInterface<File, Report> result){
+		//recupera il report associato all'unico risultato che dovrebbe essere stato ottenuto
+		Set<File> resultSet;
+		try {
+			resultSet = result.getResultDataSet();
+		} catch (FirmapiuException e3) {
+			e3.printStackTrace();
+			throw new DBusExecutionException(localrb.getString("error4v")+" : "+e3.getLocalizedMessage());
+		}
+		if(resultSet.size()!=1)
+			throw new IllegalArgumentException("Abbiamo un problema huston");
+		File keyFile=resultSet.iterator().next();
+		Report verifyReport;
+		try {
+			verifyReport = result.getResult(keyFile);
+		} catch (FirmapiuException e3) {
+			e3.printStackTrace();
+			throw new DBusExecutionException(localrb.getString("error3v")+" : "+e3.getLocalizedMessage());
+		}
+		//recupera la lista dei firmatari e crea la struttura dati in risposta da inviare a Dbus
+		List<SignerInformation> signerList;
+		try {
+			signerList = verifyReport.getSigners();
+		} catch (FirmapiuException e2) {
+			e2.printStackTrace();
+			throw new DBusExecutionException(localrb.getString("error4v")+" : "+e2.getLocalizedMessage());
+		}
+		ArrayList<TreeMap<String, Variant<?>>> dbusResultList = new ArrayList<TreeMap<String, Variant<?>>>();
+		Iterator<SignerInformation> signerListItr = signerList.iterator();
+		while(signerListItr.hasNext()){
+			SignerInformation signer=signerListItr.next();
+			Set<String> signerRecordFields;
+			try {
+				signerRecordFields = verifyReport.getSignerRecordFields(signer);
+			} catch (FirmapiuException e1) {
+				e1.printStackTrace();
+				throw new DBusExecutionException(localrb.getString("error4v")+" : "+e1.getLocalizedMessage());
+			}
+			TreeMap<String, Variant<?>> dbusRecord= new TreeMap<String, Variant<?>>();
+			Iterator<String> fieldItr= signerRecordFields.iterator();
+			while(fieldItr.hasNext()){
+				String field=fieldItr.next();
+				try {
+					Object fieldValue = verifyReport.getSignerField(signer, field);
+					dbusRecord.put(field,obj2Variant(fieldValue));
+				} catch (FirmapiuException e) {
+					// in caso di eccezione aggiunge l'errore come Variant (is)
+					e.printStackTrace();
+					FirmapiuExceptionStruct struct = new FirmapiuExceptionStruct(e.errorCode,e.getLocalizedMessage());
+					Variant<?> newValue=new Variant<FirmapiuExceptionStruct>(struct,FirmapiuExceptionStruct.class);
+					dbusRecord.put(field,obj2Variant(newValue));
+				}
+			}
+			dbusResultList.add(dbusRecord);
+		}
+		return (Map<String, Variant<?>>[])dbusResultList.toArray();
+	}  
+	
 	//fa il marshalling dei risultati ottenuti in uscita
 	private Map<String,Variant<?>> marshallFile(ResultInterface<File, File>result){
 		//effettua il marshalling dei risultati da inviare a dbus
@@ -284,7 +418,7 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 			itr = result.getResultDataSet().iterator();
 		} catch (FirmapiuException e) {
 			e.printStackTrace();
-			throw new DBusExecutionException(localrb.getString("error3f")+" : "+e.getLocalizedMessage());
+			throw new DBusExecutionException(localrb.getString("error3m")+" : "+e.getLocalizedMessage());
 		}
 		while(itr.hasNext()){
 			File keyFile=itr.next();
@@ -302,5 +436,15 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 		}//fine while
 
 		return dbusResult;
+	}
+	
+	//trasforma un oggetto in una variant
+	private static Variant<?> obj2Variant(Object obj){
+		//per il momento gestisce solo boolean e string
+		if(obj instanceof String)
+			return new Variant<String>((String)obj,"s");
+		if(obj instanceof Boolean)
+			return new Variant<Boolean>((Boolean)obj,"b");
+		throw new IllegalArgumentException("Cannot tranform Object to Variant!");
 	}
 }
