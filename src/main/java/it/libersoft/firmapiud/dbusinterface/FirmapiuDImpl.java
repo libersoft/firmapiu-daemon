@@ -446,7 +446,8 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 	
 	//trasforma un oggetto in una variant
 	private static Variant<?> obj2Variant(Object obj){
-		//per il momento gestisce solo boolean e string
+		if(obj instanceof Integer)
+			return new Variant<Integer>((Integer)obj,"i");
 		if(obj instanceof String)
 			return new Variant<String>((String)obj,"s");
 		if(obj instanceof Boolean)
