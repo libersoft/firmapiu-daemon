@@ -25,6 +25,9 @@ import static it.libersoft.firmapiu.consts.ArgumentConsts.*;
 
 import java.io.File;
 import java.lang.reflect.Type;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -351,7 +354,7 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 	}
 
 	//fa il mashalling del risultato ottenuto dall'operazione di verifica
-	public Map<String, Variant<?>>[] marshallVerifyResult(ResultInterface<File, Report> result){
+	private Map<String, Variant<?>>[] marshallVerifyResult(ResultInterface<File, Report> result){
 		//recupera il report associato all'unico risultato che dovrebbe essere stato ottenuto
 		Set<File> resultSet;
 		try {
@@ -378,7 +381,9 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 			e2.printStackTrace();
 			throw new DBusExecutionException(localrb.getString("error4v")+" : "+e2.getLocalizedMessage());
 		}
-		ArrayList<TreeMap<String, Variant<?>>> dbusResultList = new ArrayList<TreeMap<String, Variant<?>>>();
+		//ArrayList<TreeMap<String, Variant<?>>> dbusResultList = new ArrayList<TreeMap<String, Variant<?>>>();
+		TreeMap<?, ?>[] dbusResult = new TreeMap<?,?>[signerList.size()];
+		int i=0;
 		Iterator<SignerInformation> signerListItr = signerList.iterator();
 		while(signerListItr.hasNext()){
 			SignerInformation signer=signerListItr.next();
@@ -404,9 +409,10 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 					dbusRecord.put(field,obj2Variant(newValue));
 				}
 			}
-			dbusResultList.add(dbusRecord);
+			//dbusResultList.add(dbusRecord);
+			dbusResult[i]=dbusRecord;
 		}
-		return (Map<String, Variant<?>>[])dbusResultList.toArray();
+		return (Map<String, Variant<?>>[])dbusResult;
 	}  
 	
 	//fa il marshalling dei risultati ottenuti in uscita
@@ -445,6 +451,44 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 			return new Variant<String>((String)obj,"s");
 		if(obj instanceof Boolean)
 			return new Variant<Boolean>((Boolean)obj,"b");
+		//restituisce le info del certificato come singola stringa
+		if(obj instanceof X509Certificate){
+			X509Certificate cert= (X509Certificate)obj;
+			Variant<byte[]> newValue=null;
+			try {
+				byte[] encodedCert=cert.getEncoded();
+				newValue = new Variant<byte[]>(encodedCert,"ay");
+			} catch (CertificateEncodingException|IllegalArgumentException e) {
+				e.printStackTrace();
+			}
+			return newValue;
+		}
+		//restituisce le info sulla signerinfo (ossia sul firmatario)
+		if (obj instanceof SignerInformation){
+			//TODO restituire un info più dettagliata rispetto al seriale del firmatario
+			SignerInformation signer= (SignerInformation)obj;
+			String signerSerial=signer.getSID().getSerialNumber().toString();
+			return new Variant<String>(signerSerial,"s");
+		}
+		//restituisce le info sulla catena di certificati
+		if (obj instanceof List<?>){
+			List<?> certList = (List<?>)obj;
+			Object[] encodedCertArray= new Object[certList.size()];
+			Iterator<?> it2= certList.iterator();
+			int i=0;
+			while(it2.hasNext()){
+				X509Certificate xcert=(X509Certificate)it2.next();
+				byte[] encodedCert=null;
+				try {
+					encodedCert = xcert.getEncoded();
+				} catch (CertificateEncodingException e) {
+					e.printStackTrace();
+				}
+				encodedCertArray[i]=encodedCert;
+				i++;
+			}
+			return new Variant<Object[]>(encodedCertArray,"aay");
+		}
 		throw new IllegalArgumentException("Cannot tranform Object to Variant!");
 	}
 }
