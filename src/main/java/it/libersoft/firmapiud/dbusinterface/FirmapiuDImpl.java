@@ -406,7 +406,7 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 					e.printStackTrace();
 					FirmapiuExceptionStruct struct = new FirmapiuExceptionStruct(e.errorCode,e.getLocalizedMessage());
 					Variant<?> newValue=new Variant<FirmapiuExceptionStruct>(struct,FirmapiuExceptionStruct.class);
-					dbusRecord.put(field,obj2Variant(newValue));
+					dbusRecord.put(field,newValue);
 				}
 			}
 			//dbusResultList.add(dbusRecord);
