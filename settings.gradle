@@ -20,4 +20,4 @@ include 'libfirmapiu-java'
 
 rootProject.name = 'firmapiu-daemon'
 
-project(":libfirmapiu-java").projectDir = file("../firmapiulib")
+project(":libfirmapiu-java").projectDir = file("../firmapiu-lib")
