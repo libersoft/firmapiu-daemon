@@ -20,4 +20,6 @@ include 'libfirmapiu-java'
 
 rootProject.name = 'firmapiu-daemon'
 
+//percorso nel file-system locale della build della libreria libfirmapiu-java dalla quale questo progetto dipende
+//ATTENZIONE: il percorso deve essere corretto altrimenti la build di firmapiu-daemon fallisce
 project(":libfirmapiu-java").projectDir = file("../firmapiu-lib")
