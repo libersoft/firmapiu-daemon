@@ -4,7 +4,6 @@
 package it.libersoft.firmapiud.dbusinterface;
 
 import it.libersoft.firmapiu.Data;
-import it.libersoft.firmapiu.Report;
 import it.libersoft.firmapiu.ResultInterface;
 //import it.libersoft.firmapiu.DataFilePath;
 //import it.libersoft.firmapiu.GenericArgument;
@@ -12,6 +11,7 @@ import it.libersoft.firmapiu.ResultInterface;
 //import it.libersoft.firmapiu.cades.CadesBESCommandInterface;
 import it.libersoft.firmapiu.cades.CadesBESFactory;
 import it.libersoft.firmapiu.cades.P7FileCommandInterface;
+import it.libersoft.firmapiu.cades.CMSReport;
 import it.libersoft.firmapiu.exception.FirmapiuException;
 import it.libersoft.firmapiu.cades.CommandProxyInterface;
 import it.libersoft.firmapiu.crtoken.KeyStoreToken;
@@ -235,7 +235,7 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 			}
 		
 			//crea l'interfaccia di comando e verifica la busta crittografica passata come parametro
-			ResultInterface<File,Report> result=null;
+			ResultInterface<File,CMSReport> result=null;
 			
 			P7FileCommandInterface p7CommandInterface=CadesBESFactory.getFactory().getP7FileCommandInterface(null,this.tslKeystoreToken);
 			try {
@@ -354,7 +354,7 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 	}
 
 	//fa il mashalling del risultato ottenuto dall'operazione di verifica
-	private Map<String, Variant<?>>[] marshallVerifyResult(ResultInterface<File, Report> result){
+	private Map<String, Variant<?>>[] marshallVerifyResult(ResultInterface<File, CMSReport> result){
 		//recupera il report associato all'unico risultato che dovrebbe essere stato ottenuto
 		Set<File> resultSet;
 		try {
@@ -366,7 +366,7 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 		if(resultSet.size()!=1)
 			throw new IllegalArgumentException("Abbiamo un problema huston");
 		File keyFile=resultSet.iterator().next();
-		Report verifyReport;
+		CMSReport verifyReport;
 		try {
 			verifyReport = result.getResult(keyFile);
 		} catch (FirmapiuException e3) {
