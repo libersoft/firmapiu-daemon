@@ -52,7 +52,7 @@ public class FirmapiuD {
 		DBusConnection dbusconn=null;
 		try {
 			LOGGER.info(rb.getString("connect0"));
-			dbusconn = DBusConnection.getConnection(DBusConnection.SESSION); 
+			dbusconn = DBusConnection.getConnection(DBusConnection.SYSTEM); 
 			LOGGER.info(rb.getString("connect1"));
 		} catch (DBusException e) {
 			LOGGER.severe(rb.getString("connect3"));

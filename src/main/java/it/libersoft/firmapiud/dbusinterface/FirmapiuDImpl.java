@@ -19,6 +19,7 @@ import it.libersoft.firmapiu.crtoken.PKCS11Token;
 import it.libersoft.firmapiu.crtoken.TokenFactoryBuilder;
 import it.libersoft.firmapiu.data.DataFactoryBuilder;
 import it.libersoft.firmapiu.data.DataFile;
+import it.libersoft.firmapiu.data.P7SDataFile;
 import static it.libersoft.firmapiu.consts.FactoryConsts.*;
 import static it.libersoft.firmapiu.consts.FactoryPropConsts.*;
 import static it.libersoft.firmapiu.consts.ArgumentConsts.*;
@@ -204,9 +205,6 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 		if(this.tslKeystoreToken==null)
 			throw new DBusExecutionException(localrb.getString("error3vt"));
 		
-		//fa l'unmarshalling dei parametri di ingresso
-		DataFile dataFile= DataFactoryBuilder.getFactory(DATAFILEFACTORY).getDataFile();
-		unmarshallOptions(dataFile, options);
 		//se è definita l'opzione detached ed è true deve verificare un p7s
 		boolean detached=false;
 		if(options!=null && options.containsKey(DETACHED)){
@@ -215,12 +213,31 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 				detached=(Boolean)val.getValue();
 			}
 		}
+		DataFile dataFile=null;
+		P7SDataFile p7sDataFile =null;
 		if(detached){
-			//verifica un p7s: la variant passata come argomento deve essere ss
-			//TODO da supportare
-			throw new DBusExecutionException(localrb.getString("error5"));
+			p7sDataFile=DataFactoryBuilder.getFactory(P7SDATAFILEFACTORY).getP7SDataFile();
+			
+			try {
+				//verifica un p7s: la variant passata come argomento deve essere ss
+				if (arg.getSig().equals("(ss)")){
+					//recupera i percorsi dei files da verificare
+					Object[] arg1=(Object[]) arg.getValue();
+					String p7sFilePath=(String)arg1[0];
+					String contentFilePath=(String)arg1[1];
+					p7sDataFile.putP7SData(new File(p7sFilePath), new File(contentFilePath));
+				} else
+					throw new DBusExecutionException(localrb.getString("error0v")+" : <"+arg.getSig()+">");
+			} catch (FirmapiuException e) {
+				e.printStackTrace();
+				throw new DBusExecutionException(localrb.getString("error0")+" : <"+e.errorCode+"> "+e.getLocalizedMessage());
+			}
 		}//fine ramo p7s
 		else{
+			//fa l'unmarshalling dei parametri di ingresso
+			dataFile= DataFactoryBuilder.getFactory(DATAFILEFACTORY).getDataFile();
+			//unmarshallOptions(dataFile, options);
+			
 			//verifica un p7m: la variant passata come argomento deve essere s
 			//unmashall file da firmare
 			try {
@@ -233,20 +250,22 @@ public final class FirmapiuDImpl implements FirmapiuDInterface {
 				e.printStackTrace();
 				throw new DBusExecutionException(localrb.getString("error0")+" : <"+e.errorCode+"> "+e.getLocalizedMessage());
 			}
-		
-			//crea l'interfaccia di comando e verifica la busta crittografica passata come parametro
-			ResultInterface<File,CMSReport> result=null;
-			
-			P7FileCommandInterface p7CommandInterface=CadesBESFactory.getFactory().getP7FileCommandInterface(null,this.tslKeystoreToken);
-			try {
-				result=p7CommandInterface.verify(dataFile);
-			} catch (FirmapiuException e) {
-				e.printStackTrace();
-				throw new DBusExecutionException(localrb.getString("error3v")+" : "+e.getLocalizedMessage());
-			}
-			
-			return marshallVerifyResult(result);
 		}//fine ramo p7m
+		
+		//crea l'interfaccia di comando e verifica la busta crittografica passata come parametro
+		ResultInterface<File,CMSReport> result=null;
+
+		P7FileCommandInterface p7CommandInterface=CadesBESFactory.getFactory().getP7FileCommandInterface(null,this.tslKeystoreToken);
+		try {
+			if(detached)
+				result=p7CommandInterface.verifyP7S(p7sDataFile);
+			else
+				result=p7CommandInterface.verify(dataFile);
+		} catch (FirmapiuException e) {
+			e.printStackTrace();
+			throw new DBusExecutionException(localrb.getString("error3v")+" : "+e.getLocalizedMessage());
+		}
+		return marshallVerifyResult(result);
 	}//fine metodo
 	
 	@Override

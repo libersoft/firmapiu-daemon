@@ -11,6 +11,7 @@ import it.libersoft.firmapiu.cades.CommandProxyInterface;
 import it.libersoft.firmapiud.FirmapiuD;
 import it.libersoft.firmapiud.dbusinterface.FirmapiuDInterface;
 import it.libersoft.firmapiud.dbusinterface.FirmapiuExceptionStruct;
+import it.libersoft.firmapiud.dbusinterface.P7SDataStruct;
 
 import org.freedesktop.dbus.DBusConnection;
 import org.freedesktop.dbus.Struct;
@@ -79,7 +80,19 @@ class FirmapiuTestClient {
 //				System.out.println("non ho capito la risposta");
 //		}
 		
+		//CODICE DI VERIFICA p7s---------------------------->
+		P7SDataStruct p7sdata = new P7SDataStruct("/home/andy/prova.p7s", "/home/andy/overview.html");
+		Variant<P7SDataStruct> varData = new Variant<P7SDataStruct>(p7sdata,P7SDataStruct.class);
+		Map<String,Variant<?>> options = new TreeMap<String,Variant<?>>();
+		options.put("detached", new Variant<Boolean>(new Boolean(true),"b"));
+		Map<String,Variant<?>>[] result=remote.verifySingle(varData, options);
 		
+		Iterator<String> itr2=result[0].keySet().iterator();
+		while(itr2.hasNext()){
+			String key=itr2.next();
+			System.out.println("Key: "+key);
+			System.out.println("\t"+result[0].get(key));
+		}
 //		//CODICE DI VERIFICA---------------------------->
 //		//String[] paths={"/home/andy/Scrivania/README.txt.p7m","/home/andy/Scrivania/Cose da Fare.txt.p7m","/pippulus"};
 //		//String[] paths={"/home/andy/Scrivania/t.txt.p7m"};
