@@ -7,24 +7,26 @@ import java.util.ResourceBundle;
 import java.util.logging.Logger;
 
 import org.freedesktop.dbus.DBusConnection;
+import org.freedesktop.dbus.DirectConnection;
 import org.freedesktop.dbus.exceptions.DBusException;
 
 /**
  * Finalizzatore per la chiusura di FirmapiuD in caso di chiusura forzata
+ * (Caso connessione diretta)
  * 
  * @author dellanna
  *
  */
-class FirmapiuDFinalizer extends Thread {
+class DirectConnectionFinalizer extends Thread {
 
-	private final DBusConnection dbusconn;
+	private final DirectConnection directConn;
 	private final ResourceBundle rb;
 	private final Logger logger;
 	
 	
-	FirmapiuDFinalizer(DBusConnection dbusconn,ResourceBundle rb) {
+	DirectConnectionFinalizer(DirectConnection dbusconn,ResourceBundle rb) {
 		super();
-		this.dbusconn = dbusconn;
+		this.directConn = dbusconn;
 		this.rb=rb;
 		logger=Logger.getLogger(this.getClass().getCanonicalName());
 	}
@@ -36,21 +38,7 @@ class FirmapiuDFinalizer extends Thread {
 		//cerca di chiudere la connessione su dbus in caso di chiusura forzata dell'applicazione
 		logger.info(rb.getString("forceclose0"));
 		//cerca di rilasciare il dbusname di Firmapiud e Token Manager
-		try {
-			dbusconn.releaseBusName(FirmapiuD.BUSNAME1);
-			logger.info(rb.getString("close1")+": "+FirmapiuD.BUSNAME1);
-		} catch (DBusException e) {
-			logger.severe(rb.getString("close2")+": "+FirmapiuD.BUSNAME1);
-			e.printStackTrace();
-		}
-		try {
-			dbusconn.releaseBusName(FirmapiuD.BUSNAME2);
-			logger.info(rb.getString("close1")+": "+FirmapiuD.BUSNAME2);
-		} catch (DBusException e) {
-			logger.severe(rb.getString("close2")+": "+FirmapiuD.BUSNAME2);
-			e.printStackTrace();
-		}
-		dbusconn.disconnect();
+		directConn.disconnect();
 		logger.info(rb.getString("close3"));
 	}
 }
