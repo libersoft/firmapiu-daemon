@@ -1,3 +1,3 @@
 #!/bin/bash
-
-java -Djava.library.path="/usr/lib/jni" -classpath /usr/share/java/libfirmapiu-java.jar:/usr/share/java/firmapiu-daemon.jar:/usr/share/java/bcprov.jar:/usr/share/java/bcpkix.jar:/usr/share/java/unix.jar:/usr/share/java/hexdump.jar:/usr/share/java/dbus-2.8.jar it.libersoft.firmapiud.FirmapiuD $1
+LIB="/usr/share/java"
+java -Djava.library.path="/usr/lib/jni" -classpath $LIB/libfirmapiu-java.jar:$LIB/firmapiu-daemon.jar:$LIB/bcprov.jar:$LIB/bcpkix.jar:$LIB/unix.jar:$LIB/hexdump.jar:$LIB/dbus.jar it.libersoft.firmapiud.FirmapiuD $1
