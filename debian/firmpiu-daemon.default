@@ -1,0 +1,11 @@
+# Defaults for firmapiu-daemon initscript
+# sourced by /etc/init.d/firmapiu-daemon
+# installed at /etc/default/firmapiu-daemon by the maintainer scripts
+
+#
+# This is a POSIX shell fragment
+#
+
+# Additional options that are passed to the Daemon.
+USER="comunicaora"
+DAEMON_OPTS=""
