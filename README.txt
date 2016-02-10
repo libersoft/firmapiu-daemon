@@ -25,3 +25,24 @@ gradle build
 	particolare configurazione di ambiente utilizzata per testare
 	il codice. Sarebbe meglio non eseguirli per non far fallire la 
 	build del progetto.
+
+
+How to build .deb package
+    In order to build the debian package you'll need:
+    * git 
+    * debuild
+
+
+    `sudo apt-get install git debuild`
+
+
+    1. git clone https://github.com/libersoft/firmapiu-daemon.git
+    2. cd firmapiu-packages
+    3. git submodules init
+    4. git submodules update
+    5. cd <package folder>
+    6. git checkout debian
+    7. debuild -uc -us 
+
+Now you should have your .deb package located in the parent folder (..)
+
